@@ -10,17 +10,17 @@ interface VideoCardProps {
 }
 
 export default function VideoCard({ video }: VideoCardProps) {
-  const formattedDate = new Date(video.created_at).toLocaleDateString('en-US', {
+  const formattedDate = new Date(video.created_at).toLocaleDateString('zh-TW', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   })
 
   return (
     <Link href={`/video/${video.id}`}>
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden hover:border-gray-600 transition-colors cursor-pointer group h-full">
+      <div className="bg-sand-100 dark:bg-sand-900 rounded-lg border border-sand-300 dark:border-sand-700 overflow-hidden hover:border-sand-400 dark:hover:border-sand-600 transition-colors cursor-pointer group h-full">
         {/* Thumbnail Section */}
-        <div className="relative aspect-video bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
+        <div className="relative aspect-video bg-gradient-to-br from-sand-200 to-sand-300 dark:from-sand-800 dark:to-sand-900 overflow-hidden">
           {video.thumbnail_url ? (
             <Image
               src={video.thumbnail_url}
@@ -29,10 +29,10 @@ export default function VideoCard({ video }: VideoCardProps) {
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-accent/20 to-accent-dark/20 flex items-center justify-center">
               <div className="flex flex-col items-center">
                 <svg
-                  className="w-16 h-16 text-gray-600"
+                  className="w-16 h-16 text-sand-400 dark:text-sand-600"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -44,9 +44,9 @@ export default function VideoCard({ video }: VideoCardProps) {
 
           {/* Play Icon Overlay */}
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <svg
-                className="w-6 h-6 text-white ml-1"
+                className="w-6 h-6 text-sand-900 dark:text-sand-50 ml-1"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -63,14 +63,14 @@ export default function VideoCard({ video }: VideoCardProps) {
 
         {/* Content Section */}
         <div className="p-4">
-          <h3 className="text-white font-semibold text-sm line-clamp-2 mb-2">
+          <h3 className="text-sand-900 dark:text-sand-50 font-semibold text-sm line-clamp-2 mb-2">
             {video.topic}
           </h3>
 
           <div className="flex items-center justify-between">
-            <p className="text-gray-400 text-xs">{formattedDate}</p>
+            <p className="text-sand-500 dark:text-sand-400 text-xs">{formattedDate}</p>
             {video.duration_sec && (
-              <p className="text-gray-400 text-xs">
+              <p className="text-sand-500 dark:text-sand-400 text-xs">
                 {Math.floor(video.duration_sec / 60)}:
                 {String(video.duration_sec % 60).padStart(2, '0')}
               </p>

@@ -8,19 +8,19 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
   const statusConfig = {
     pending: {
       classes: `${baseClasses} bg-yellow-500/20 text-yellow-300`,
-      label: 'Pending',
+      label: '等待中',
     },
     processing: {
       classes: `${baseClasses} bg-blue-500/20 text-blue-300 animate-pulse`,
-      label: 'Processing',
+      label: '處理中',
     },
     completed: {
       classes: `${baseClasses} bg-green-500/20 text-green-300`,
-      label: 'Completed',
+      label: '已完成',
     },
     failed: {
       classes: `${baseClasses} bg-red-500/20 text-red-300`,
-      label: 'Failed',
+      label: '失敗',
     },
   }
 

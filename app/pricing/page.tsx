@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import PageTransition from '@/components/PageTransition'
 import PricingCard from '@/components/PricingCard'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/types'
@@ -49,95 +50,97 @@ export default function PricingPage() {
       name: 'Free',
       price: 0,
       period: 'mo',
-      features: ['3 videos/month', '720p resolution', 'Watermark', 'Email support'],
+      features: ['每月 3 支影片', '720p 解析度', '含浮水印', '信箱客服'],
       isPopular: false,
     },
     {
       name: 'Starter',
       price: 19,
       period: 'mo',
-      features: ['30 videos/month', '1080p resolution', 'No watermark', 'Priority support'],
+      features: ['每月 30 支影片', '1080p 解析度', '無浮水印', '優先客服'],
       isPopular: true,
     },
     {
       name: 'Pro',
       price: 49,
       period: 'mo',
-      features: ['100 videos/month', '1080p resolution', 'No watermark', 'Priority queue', 'API access'],
+      features: ['每月 100 支影片', '1080p 解析度', '無浮水印', '優先排隊', 'API 存取'],
       isPopular: false,
     },
   ]
 
   const handleSelectPlan = () => {
-    alert('Stripe integration coming soon!')
+    alert('Stripe 付款功能即將上線！')
   }
 
   return (
-    <div className="flex flex-col min-h-screen w-full">
-      <Navbar user={user} />
+    <PageTransition>
+      <div className="flex flex-col min-h-screen w-full">
+        <Navbar user={user} />
 
-      <main className="flex-1 w-full pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Header Section */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              Simple, Transparent Pricing
-            </h1>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Choose the perfect plan for your video creation needs. Upgrade or downgrade anytime.
-            </p>
-          </div>
+        <main className="flex-1 w-full pt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Header Section */}
+            <div className="text-center mb-16">
+              <h1 className="text-4xl sm:text-5xl font-bold text-sand-900 dark:text-sand-50 mb-4">
+                簡單透明的價格方案
+              </h1>
+              <p className="text-sand-500 dark:text-sand-400 text-lg max-w-2xl mx-auto">
+                選擇最適合你的方案，隨時可以升級或降級。
+              </p>
+            </div>
 
-          {/* Pricing Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {plans.map((plan) => (
-              <PricingCard
-                key={plan.name}
-                name={plan.name}
-                price={plan.price}
-                period={plan.period}
-                features={plan.features}
-                isPopular={plan.isPopular}
-                isCurrentPlan={profile?.plan === plan.name.toLowerCase()}
-                onSelect={() => handleSelectPlan()}
-              />
-            ))}
-          </div>
+            {/* Pricing Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+              {plans.map((plan) => (
+                <PricingCard
+                  key={plan.name}
+                  name={plan.name}
+                  price={plan.price}
+                  period={plan.period}
+                  features={plan.features}
+                  isPopular={plan.isPopular}
+                  isCurrentPlan={profile?.plan === plan.name.toLowerCase()}
+                  onSelect={() => handleSelectPlan()}
+                />
+              ))}
+            </div>
 
-          {/* FAQ Section */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 mt-20">
-            <h2 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Can I change my plan anytime?</h3>
-                <p className="text-gray-400">
-                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">What happens to my videos if I downgrade?</h3>
-                <p className="text-gray-400">
-                  All your existing videos remain accessible. You just lose access to features exclusive to your previous plan.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Do you offer annual billing?</h3>
-                <p className="text-gray-400">
-                  Coming soon! Contact our team for custom enterprise pricing.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Can I cancel anytime?</h3>
-                <p className="text-gray-400">
-                  Yes, cancel your subscription anytime. No questions asked, no cancellation fees.
-                </p>
+            {/* FAQ Section */}
+            <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-8 mt-20">
+              <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-8">常見問題</h2>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-sand-900 dark:text-sand-50 mb-2">可以隨時更換方案嗎？</h3>
+                  <p className="text-sand-500 dark:text-sand-400">
+                    可以，隨時升級或降級方案，變更即時生效。
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-sand-900 dark:text-sand-50 mb-2">降級後我的影片會怎樣？</h3>
+                  <p className="text-sand-500 dark:text-sand-400">
+                    所有現有影片仍可存取，只是無法使用前一方案的專屬功能。
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-sand-900 dark:text-sand-50 mb-2">有提供年繳方案嗎？</h3>
+                  <p className="text-sand-500 dark:text-sand-400">
+                    即將推出！如需企業客製方案，請聯繫我們的團隊。
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-sand-900 dark:text-sand-50 mb-2">可以隨時取消嗎？</h3>
+                  <p className="text-sand-500 dark:text-sand-400">
+                    可以，隨時取消訂閱，無需任何理由，也不收取取消費用。
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </PageTransition>
   )
 }

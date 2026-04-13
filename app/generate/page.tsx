@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import PageTransition from '@/components/PageTransition'
 import type { Profile } from '@/lib/types'
 
 export default function GeneratePage() {
@@ -49,7 +50,7 @@ export default function GeneratePage() {
           .single()
 
         if (profileError || !profileData) {
-          setError('Failed to load profile')
+          setError('無法載入個人資料')
           return
         }
 
@@ -69,17 +70,17 @@ export default function GeneratePage() {
     e.preventDefault()
 
     if (!topic.trim()) {
-      setError('Please enter a topic')
+      setError('請輸入主題')
       return
     }
 
     if (!profile || !user) {
-      setError('Profile not loaded')
+      setError('無法載入個人資料')
       return
     }
 
     if (profile.credits_remaining <= 0) {
-      setError('No credits remaining. Please upgrade your plan.')
+      setError('點數已用完，請升級方案。')
       return
     }
 
@@ -92,7 +93,7 @@ export default function GeneratePage() {
       } = await supabase.auth.getUser()
 
       if (!authUser) {
-        setError('Not authenticated')
+        setError('未登入')
         return
       }
 
@@ -108,7 +109,7 @@ export default function GeneratePage() {
         .single()
 
       if (videoError || !videoData) {
-        setError('Failed to create video')
+        setError('建立影片失敗')
         return
       }
 
@@ -151,7 +152,7 @@ export default function GeneratePage() {
       router.push(`/video/${videoData.id}`)
     } catch (err) {
       console.error('Error:', err)
-      setError('An error occurred. Please try again.')
+      setError('發生錯誤，請重試。')
     } finally {
       setSubmitting(false)
     }
@@ -159,12 +160,12 @@ export default function GeneratePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen w-full">
+      <div className="flex flex-col min-h-screen w-full bg-sand-50 dark:bg-sand-950">
         <Navbar />
         <main className="flex-1 w-full pt-20 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-400">Loading...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-accent mb-4"></div>
+            <p className="text-sand-500 dark:text-sand-400">載入中...</p>
           </div>
         </main>
       </div>
@@ -172,144 +173,143 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <div className="flex flex-col min-h-screen w-full bg-sand-50 dark:bg-sand-950">
       <Navbar user={user} />
 
-      <main className="flex-1 w-full pt-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Back Link */}
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-gray-400 hover:text-white transition-colors mb-8"
-          >
-            <span className="mr-2">←</span>
-            Back to Dashboard
-          </Link>
+      <PageTransition>
+        <main className="flex-1 w-full pt-20">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Back Link */}
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center text-sand-500 dark:text-sand-400 hover:text-sand-700 dark:hover:text-sand-200 transition-colors mb-8"
+            >
+              <span className="mr-2">←</span>
+              返回儀表板
+            </Link>
 
-          {/* Page Header */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Create New Video
-            </h1>
-            <p className="text-gray-400">
-              Enter a topic and let our AI generate a professional video for you
-            </p>
-          </div>
-
-          {/* No Credits Message */}
-          {profile && profile.credits_remaining <= 0 && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-red-400 mb-2">
-                No Credits Remaining
-              </h3>
-              <p className="text-red-300 mb-4">
-                You&apos;ve used all your credits for this month. Upgrade your plan
-                to continue creating videos.
+            {/* Page Header */}
+            <div className="mb-12">
+              <h1 className="text-4xl font-bold text-sand-900 dark:text-sand-50 mb-2">
+                建立新影片
+              </h1>
+              <p className="text-sand-500 dark:text-sand-400">
+                輸入主題，讓 AI 為你生成專業影片
               </p>
-              <Link
-                href="/pricing"
-                className="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                View Pricing Plans
-              </Link>
             </div>
-          )}
 
-          {/* Main Content */}
-          {profile && profile.credits_remaining > 0 ? (
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-8">
-              <form onSubmit={handleSubmit}>
-                {/* Error Message */}
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
-                    <p className="text-red-300">{error}</p>
-                  </div>
-                )}
-
-                {/* Topic Input */}
-                <div className="mb-8">
-                  <label
-                    htmlFor="topic"
-                    className="block text-sm font-semibold text-white mb-3"
-                  >
-                    Video Topic
-                  </label>
-                  <textarea
-                    id="topic"
-                    placeholder="e.g., 5 Amazing Facts About Space"
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    disabled={submitting}
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
-                    rows={4}
-                  />
-                  <p className="text-gray-400 text-sm mt-2">
-                    Be as specific as you&apos;d like. The AI will generate a script,
-                    voiceover, and matching images.
-                  </p>
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-400 text-sm">
-                    Credits remaining: <span className="text-white font-semibold">{profile.credits_remaining}</span>
-                  </p>
-                  <button
-                    type="submit"
-                    disabled={submitting || !topic.trim()}
-                    className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {submitting && (
-                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    )}
-                    <span>{submitting ? 'Creating...' : 'Generate Video'}</span>
-                  </button>
-                </div>
-              </form>
-
-              {/* Info Section */}
-              <div className="mt-8 pt-8 border-t border-gray-700">
-                <h3 className="text-white font-semibold mb-4">What happens next?</h3>
-                <ul className="space-y-3 text-gray-400 text-sm">
-                  <li className="flex items-start">
-                    <span className="text-blue-400 mr-3 font-bold">1.</span>
-                    <span>Our AI generates a detailed script based on your topic</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-400 mr-3 font-bold">2.</span>
-                    <span>Natural-sounding voiceover is created for the script</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-400 mr-3 font-bold">3.</span>
-                    <span>Beautiful images are generated to match each part of the script</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-400 mr-3 font-bold">4.</span>
-                    <span>Everything is combined into a professional video</span>
-                  </li>
-                </ul>
+            {/* No Credits Message */}
+            {profile && profile.credits_remaining <= 0 && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-red-400 mb-2">
+                  點數已用完
+                </h3>
+                <p className="text-red-300 mb-4">
+                  本月點數已全部用完，請升級方案繼續建立影片。
+                </p>
+                <Link
+                  href="/pricing"
+                  className="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  查看方案價格
+                </Link>
               </div>
-            </div>
-          ) : (
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-12 text-center">
-              <div className="text-6xl mb-4 opacity-50">⚠️</div>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                No Credits Available
-              </h2>
-              <p className="text-gray-400 mb-6 max-w-sm mx-auto">
-                You&apos;ve used all the video credits on your current plan. Upgrade
-                your plan to continue creating videos.
-              </p>
-              <Link
-                href="/pricing"
-                className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                View Plans and Upgrade
-              </Link>
-            </div>
-          )}
-        </div>
-      </main>
+            )}
+
+            {/* Main Content */}
+            {profile && profile.credits_remaining > 0 ? (
+              <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-8">
+                <form onSubmit={handleSubmit}>
+                  {/* Error Message */}
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+                      <p className="text-red-300">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Topic Input */}
+                  <div className="mb-8">
+                    <label
+                      htmlFor="topic"
+                      className="block text-sm font-semibold text-sand-900 dark:text-sand-50 mb-3"
+                    >
+                      影片主題
+                    </label>
+                    <textarea
+                      id="topic"
+                      placeholder="例如：太空的 5 個驚人事實"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      disabled={submitting}
+                      className="w-full px-4 py-3 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 placeholder-sand-400 dark:placeholder-sand-500 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+                      rows={4}
+                    />
+                    <p className="text-sand-500 dark:text-sand-400 text-sm mt-2">
+                      可以盡量描述細節，AI 會自動產生腳本、旁白和配圖。
+                    </p>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sand-500 dark:text-sand-400 text-sm">
+                      剩餘點數：<span className="text-sand-900 dark:text-sand-50 font-semibold">{profile.credits_remaining}</span>
+                    </p>
+                    <button
+                      type="submit"
+                      disabled={submitting || !topic.trim()}
+                      className="flex items-center space-x-2 px-6 py-3 bg-accent hover:bg-accent-dark text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting && (
+                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      )}
+                      <span>{submitting ? '建立中...' : '生成影片'}</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* Info Section */}
+                <div className="mt-8 pt-8 border-t border-sand-300 dark:border-sand-700">
+                  <h3 className="text-sand-900 dark:text-sand-50 font-semibold mb-4">接下來會發生什麼？</h3>
+                  <ul className="space-y-3 text-sand-500 dark:text-sand-400 text-sm">
+                    <li className="flex items-start">
+                      <span className="text-accent mr-3 font-bold">1.</span>
+                      <span>AI 根據你的主題產生詳細腳本</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-accent mr-3 font-bold">2.</span>
+                      <span>自動生成自然語調的旁白</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-accent mr-3 font-bold">3.</span>
+                      <span>為每個段落產生精美配圖</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-accent mr-3 font-bold">4.</span>
+                      <span>將所有素材合成為專業影片</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-12 text-center">
+                <div className="text-6xl mb-4 opacity-50">⚠️</div>
+                <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-2">
+                  沒有可用點數
+                </h2>
+                <p className="text-sand-500 dark:text-sand-400 mb-6 max-w-sm mx-auto">
+                  目前方案的影片點數已全部用完，請升級方案。
+                </p>
+                <Link
+                  href="/pricing"
+                  className="inline-block px-6 py-3 bg-accent hover:bg-accent-dark text-white font-semibold rounded-lg transition-colors"
+                >
+                  查看方案並升級
+                </Link>
+              </div>
+            )}
+          </div>
+        </main>
+      </PageTransition>
 
       <Footer />
     </div>

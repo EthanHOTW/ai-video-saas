@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import PageTransition from '@/components/PageTransition'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/types'
 
@@ -84,7 +85,7 @@ export default function SettingsPage() {
         setTimeout(() => setSuccess(false), 3000)
       }
     } catch (error) {
-      setError('Failed to update profile')
+      setError('更新個人資料失敗')
       console.error('Error saving profile:', error)
     } finally {
       setSaving(false)
@@ -96,157 +97,161 @@ export default function SettingsPage() {
   }
 
   const handleConfirmDelete = () => {
-    alert('Account deletion feature will be implemented with proper verification flow.')
+    alert('帳號刪除功能將在完整驗證流程後實作。')
     setShowDeleteConfirm(false)
   }
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen w-full">
-        <Navbar user={user} />
-        <main className="flex-1 w-full pt-20 flex items-center justify-center">
-          <div className="text-gray-400">Loading...</div>
-        </main>
-        <Footer />
-      </div>
+      <PageTransition>
+        <div className="flex flex-col min-h-screen w-full">
+          <Navbar user={user} />
+          <main className="flex-1 w-full pt-20 flex items-center justify-center">
+            <div className="text-sand-500 dark:text-sand-400">載入中...</div>
+          </main>
+          <Footer />
+        </div>
+      </PageTransition>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-screen w-full">
-      <Navbar user={user} />
+    <PageTransition>
+      <div className="flex flex-col min-h-screen w-full">
+        <Navbar user={user} />
 
-      <main className="flex-1 w-full pt-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Header Section */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-white mb-2">Settings</h1>
-            <p className="text-gray-400">Manage your account and preferences</p>
-          </div>
-
-          {/* Account Info Section */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Account Information</h2>
-
-            <div className="space-y-6">
-              {/* Display Name */}
-              <div>
-                <label htmlFor="displayName" className="block text-sm font-medium text-gray-300 mb-2">
-                  Display Name
-                </label>
-                <input
-                  type="text"
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              {/* Email (Read-only) */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={profile?.email || ''}
-                  disabled
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed"
-                />
-              </div>
-
-              {/* Error and Success Messages */}
-              {error && (
-                <div className="p-4 bg-red-600/10 border border-red-600/20 rounded-lg">
-                  <p className="text-red-400 text-sm">{error}</p>
-                </div>
-              )}
-              {success && (
-                <div className="p-4 bg-green-600/10 border border-green-600/20 rounded-lg">
-                  <p className="text-green-400 text-sm">Profile updated successfully!</p>
-                </div>
-              )}
-
-              {/* Save Button */}
-              <button
-                onClick={handleSaveProfile}
-                disabled={saving}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
+        <main className="flex-1 w-full pt-20">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Header Section */}
+            <div className="mb-12">
+              <h1 className="text-4xl font-bold text-sand-900 dark:text-sand-50 mb-2">設定</h1>
+              <p className="text-sand-500 dark:text-sand-400">管理你的帳號與偏好設定</p>
             </div>
-          </div>
 
-          {/* Current Plan Section */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Billing & Plan</h2>
+            {/* Account Info Section */}
+            <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-8 mb-8">
+              <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-6">帳號資訊</h2>
 
-            <div className="space-y-4 mb-6">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Current Plan</p>
-                <p className="text-2xl font-bold text-white capitalize">{profile?.plan}</p>
-              </div>
-
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Credits Remaining</p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold text-blue-400">{profile?.credits_remaining}</p>
-                  <span className="text-gray-400">credits</span>
+              <div className="space-y-6">
+                {/* Display Name */}
+                <div>
+                  <label htmlFor="displayName" className="block text-sm font-medium text-sand-600 dark:text-sand-300 mb-2">
+                    顯示名稱
+                  </label>
+                  <input
+                    type="text"
+                    id="displayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full px-4 py-2 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 placeholder-sand-400 dark:placeholder-sand-500 focus:outline-none focus:border-accent transition-colors"
+                  />
                 </div>
+
+                {/* Email (Read-only) */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-sand-600 dark:text-sand-300 mb-2">
+                    電子郵件
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={profile?.email || ''}
+                    disabled
+                    className="w-full px-4 py-2 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-500 dark:text-sand-400 cursor-not-allowed"
+                  />
+                </div>
+
+                {/* Error and Success Messages */}
+                {error && (
+                  <div className="p-4 bg-red-600/10 border border-red-600/20 rounded-lg">
+                    <p className="text-red-400 text-sm">{error}</p>
+                  </div>
+                )}
+                {success && (
+                  <div className="p-4 bg-green-600/10 border border-green-600/20 rounded-lg">
+                    <p className="text-green-400 text-sm">個人資料已更新！</p>
+                  </div>
+                )}
+
+                {/* Save Button */}
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                  className="px-6 py-2 bg-accent hover:bg-accent-dark disabled:bg-sand-300 dark:disabled:bg-sand-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+                >
+                  {saving ? '儲存中...' : '儲存變更'}
+                </button>
               </div>
             </div>
 
-            <Link
-              href="/pricing"
-              className="inline-block px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              Manage Plan
-            </Link>
-          </div>
+            {/* Current Plan Section */}
+            <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-8 mb-8">
+              <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-6">帳單與方案</h2>
 
-          {/* Danger Zone Section */}
-          <div className="bg-red-950/20 border border-red-700/30 rounded-lg p-8">
-            <h2 className="text-2xl font-bold text-white mb-4">Danger Zone</h2>
-            <p className="text-gray-400 mb-6">
-              Permanently delete your account and all associated data. This action cannot be undone.
-            </p>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-sand-500 dark:text-sand-400 text-sm mb-1">目前方案</p>
+                  <p className="text-2xl font-bold text-sand-900 dark:text-sand-50 capitalize">{profile?.plan}</p>
+                </div>
 
-            {!showDeleteConfirm ? (
-              <button
-                onClick={handleDeleteAccount}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                Delete Account
-              </button>
-            ) : (
-              <div className="bg-red-600/10 border border-red-600/30 rounded-lg p-4">
-                <p className="text-white mb-4">
-                  Are you sure? This will permanently delete your account and all your videos.
-                </p>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleConfirmDelete}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
-                  >
-                    Yes, Delete My Account
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
-                  >
-                    Cancel
-                  </button>
+                <div>
+                  <p className="text-sand-500 dark:text-sand-400 text-sm mb-1">剩餘點數</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-2xl font-bold text-accent">{profile?.credits_remaining}</p>
+                    <span className="text-sand-500 dark:text-sand-400">點</span>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      </main>
 
-      <Footer />
-    </div>
+              <Link
+                href="/pricing"
+                className="inline-block px-6 py-2 bg-sand-200 dark:bg-sand-700 hover:bg-sand-300 dark:hover:bg-sand-600 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
+              >
+                管理方案
+              </Link>
+            </div>
+
+            {/* Danger Zone Section */}
+            <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-700/30 rounded-lg p-8">
+              <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-4">危險區域</h2>
+              <p className="text-sand-500 dark:text-sand-400 mb-6">
+                永久刪除你的帳號及所有相關資料，此操作無法復原。
+              </p>
+
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={handleDeleteAccount}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  刪除帳號
+                </button>
+              ) : (
+                <div className="bg-red-600/10 border border-red-600/30 rounded-lg p-4">
+                  <p className="text-sand-900 dark:text-sand-50 mb-4">
+                    確定要刪除嗎？這將永久刪除你的帳號和所有影片。
+                  </p>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleConfirmDelete}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                    >
+                      是的，刪除我的帳號
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="px-4 py-2 bg-sand-200 dark:bg-sand-700 hover:bg-sand-300 dark:hover:bg-sand-600 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
+                    >
+                      取消
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    </PageTransition>
   )
 }

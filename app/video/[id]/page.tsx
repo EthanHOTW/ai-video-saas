@@ -8,6 +8,7 @@ import { Video, Script } from '@/lib/types'
 import Navbar from '@/components/Navbar'
 import StatusBadge from '@/components/StatusBadge'
 import Footer from '@/components/Footer'
+import PageTransition from '@/components/PageTransition'
 
 export default function VideoDetailPage() {
   const params = useParams()
@@ -116,8 +117,8 @@ export default function VideoDetailPage() {
         <Navbar user={user} />
         <main className="flex-1 w-full pt-20 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-400">Loading video...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-accent mb-4"></div>
+            <p className="text-sand-500 dark:text-sand-400">載入影片中...</p>
           </div>
         </main>
       </div>
@@ -133,26 +134,26 @@ export default function VideoDetailPage() {
             {/* Back Link */}
             <Link
               href="/dashboard"
-              className="inline-flex items-center text-gray-400 hover:text-white transition-colors mb-8"
+              className="inline-flex items-center text-sand-500 dark:text-sand-400 hover:text-sand-900 dark:hover:text-sand-50 transition-colors mb-8"
             >
               <span className="mr-2">←</span>
-              Back to Dashboard
+              返回儀表板
             </Link>
 
             {/* Error State */}
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-12 text-center">
               <div className="text-6xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                Video Not Found
+              <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-2">
+                找不到影片
               </h2>
-              <p className="text-gray-400 mb-6">
-                {error || 'The video you are looking for does not exist.'}
+              <p className="text-sand-500 dark:text-sand-400 mb-6">
+                {error || '你查找的影片不存在。'}
               </p>
               <Link
                 href="/dashboard"
-                className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                className="inline-block px-6 py-3 bg-accent hover:bg-accent/90 text-sand-50 font-semibold rounded-lg transition-colors"
               >
-                Back to Dashboard
+                返回儀表板
               </Link>
             </div>
           </div>
@@ -167,50 +168,52 @@ export default function VideoDetailPage() {
       <Navbar user={user} />
 
       <main className="flex-1 w-full pt-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Back Link */}
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-gray-400 hover:text-white transition-colors mb-8"
-          >
-            <span className="mr-2">←</span>
-            Back to Dashboard
-          </Link>
+        <PageTransition>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Back Link */}
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center text-sand-500 dark:text-sand-400 hover:text-sand-900 dark:hover:text-sand-50 transition-colors mb-8"
+            >
+              <span className="mr-2">←</span>
+              返回儀表板
+            </Link>
 
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
-                  {video.topic}
-                </h1>
-                <p className="text-gray-400">
-                  Created {new Date(video.created_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-              <div>
-                <StatusBadge status={video.status} />
+            {/* Page Header */}
+            <div className="mb-8">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h1 className="text-4xl font-bold text-sand-900 dark:text-sand-50 mb-2">
+                    {video.topic}
+                  </h1>
+                  <p className="text-sand-500 dark:text-sand-400">
+                    建立於 {new Date(video.created_at).toLocaleDateString('zh-TW', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </div>
+                <div>
+                  <StatusBadge status={video.status} />
+                </div>
               </div>
             </div>
+
+            {/* Content based on status */}
+            {(video.status === 'pending' || video.status === 'processing') && (
+              <ProcessingState video={video} />
+            )}
+
+            {video.status === 'completed' && (
+              <CompletedState video={video} />
+            )}
+
+            {video.status === 'failed' && (
+              <FailedState video={video} />
+            )}
           </div>
-
-          {/* Content based on status */}
-          {(video.status === 'pending' || video.status === 'processing') && (
-            <ProcessingState video={video} />
-          )}
-
-          {video.status === 'completed' && (
-            <CompletedState video={video} />
-          )}
-
-          {video.status === 'failed' && (
-            <FailedState video={video} />
-          )}
-        </div>
+        </PageTransition>
       </main>
 
       <Footer />
@@ -221,36 +224,36 @@ export default function VideoDetailPage() {
 // Processing/Pending State Component
 function ProcessingState({ video }: { video: Video }) {
   const statusText = video.status === 'pending'
-    ? 'Generating your video...'
-    : 'Processing...'
+    ? '正在生成你的影片...'
+    : '處理中...'
 
   const steps = [
-    { name: 'Generating script', icon: '✍️' },
-    { name: 'Creating voiceover', icon: '🎤' },
-    { name: 'Generating images', icon: '🖼️' },
-    { name: 'Rendering video', icon: '🎬' },
+    { name: '生成腳本', icon: '✍️' },
+    { name: '建立旁白', icon: '🎤' },
+    { name: '生成配圖', icon: '🖼️' },
+    { name: '渲染影片', icon: '🎬' },
   ]
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-12">
+    <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-12">
       <div className="flex flex-col items-center justify-center">
         {/* Large animated spinner */}
         <div className="mb-8 flex items-center justify-center">
           <div className="relative w-24 h-24">
-            <div className="absolute inset-0 rounded-full border-4 border-gray-700"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 border-r-blue-600 animate-spin"></div>
-            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-blue-600/10 to-purple-600/10 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-4 border-sand-300 dark:border-sand-700"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-accent border-r-accent animate-spin"></div>
+            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-accent/10 to-accent-dark/10 flex items-center justify-center">
               <span className="text-2xl">🎥</span>
             </div>
           </div>
         </div>
 
         {/* Status text */}
-        <h2 className="text-2xl font-bold text-white mb-2 text-center">
+        <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-2 text-center">
           {statusText}
         </h2>
-        <p className="text-gray-400 text-center mb-8">
-          This may take a few minutes. We&apos;ll update you as we go.
+        <p className="text-sand-500 dark:text-sand-400 text-center mb-8">
+          可能需要幾分鐘，進度會即時更新。
         </p>
 
         {/* Progress steps */}
@@ -258,19 +261,19 @@ function ProcessingState({ video }: { video: Video }) {
           <div className="space-y-3">
             {steps.map((step, index) => (
               <div key={index} className="flex items-center space-x-3">
-                <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-sm text-gray-400">
+                <div className="w-6 h-6 rounded-full bg-sand-200 dark:bg-sand-800 flex items-center justify-center text-sm text-sand-500 dark:text-sand-400">
                   {step.icon}
                 </div>
-                <span className="text-gray-400 text-sm">{step.name}</span>
+                <span className="text-sand-500 dark:text-sand-400 text-sm">{step.name}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Topic display */}
-        <div className="mt-10 pt-10 border-t border-gray-700 w-full">
-          <p className="text-gray-400 text-sm mb-2">Topic:</p>
-          <p className="text-white font-medium">{video.topic}</p>
+        <div className="mt-10 pt-10 border-t border-sand-300 dark:border-sand-700 w-full">
+          <p className="text-sand-500 dark:text-sand-400 text-sm mb-2">主題：</p>
+          <p className="text-sand-900 dark:text-sand-50 font-medium">{video.topic}</p>
         </div>
       </div>
     </div>
@@ -290,7 +293,7 @@ function CompletedState({ video }: { video: Video }) {
   return (
     <div className="space-y-8">
       {/* Video Player */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+      <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg overflow-hidden">
         <div className="relative aspect-video bg-black">
           <video
             src={video.video_url || undefined}
@@ -306,31 +309,31 @@ function CompletedState({ video }: { video: Video }) {
       <div className="flex flex-col sm:flex-row gap-4">
         <button
           onClick={handleDownload}
-          className="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
+          className="flex items-center justify-center px-6 py-3 bg-accent hover:bg-accent/90 text-sand-50 font-semibold rounded-lg transition-colors duration-200"
         >
           <span className="mr-2">⬇️</span>
-          Download Video
+          下載影片
         </button>
         <Link
           href="/generate"
-          className="flex items-center justify-center px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200"
+          className="flex items-center justify-center px-6 py-3 bg-sand-200 hover:bg-sand-300 dark:bg-sand-800 dark:hover:bg-sand-700 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors duration-200"
         >
           <span className="mr-2">➕</span>
-          Create Another
+          再建一支
         </Link>
       </div>
 
       {/* Video Info */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Video Info</h3>
+      <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-sand-900 dark:text-sand-50 mb-4">影片資訊</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <p className="text-gray-400 text-sm mb-1">Topic</p>
-            <p className="text-white font-medium">{video.topic}</p>
+            <p className="text-sand-500 dark:text-sand-400 text-sm mb-1">主題</p>
+            <p className="text-sand-900 dark:text-sand-50 font-medium">{video.topic}</p>
           </div>
           <div>
-            <p className="text-gray-400 text-sm mb-1">Duration</p>
-            <p className="text-white font-medium">
+            <p className="text-sand-500 dark:text-sand-400 text-sm mb-1">時長</p>
+            <p className="text-sand-900 dark:text-sand-50 font-medium">
               {video.duration_sec
                 ? `${Math.floor(video.duration_sec / 60)}:${String(
                     video.duration_sec % 60
@@ -339,9 +342,9 @@ function CompletedState({ video }: { video: Video }) {
             </p>
           </div>
           <div>
-            <p className="text-gray-400 text-sm mb-1">Created</p>
-            <p className="text-white font-medium">
-              {new Date(video.created_at).toLocaleDateString('en-US', {
+            <p className="text-sand-500 dark:text-sand-400 text-sm mb-1">建立日期</p>
+            <p className="text-sand-900 dark:text-sand-50 font-medium">
+              {new Date(video.created_at).toLocaleDateString('zh-TW', {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
@@ -353,12 +356,12 @@ function CompletedState({ video }: { video: Video }) {
 
       {/* Script Section */}
       {video.script_json && Object.keys(video.script_json).length > 0 && (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg">
+        <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg">
           <button
             onClick={() => setScriptExpanded(!scriptExpanded)}
-            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-700/50 transition-colors"
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-sand-200/50 dark:hover:bg-sand-700/50 transition-colors"
           >
-            <h3 className="text-lg font-semibold text-white">Script</h3>
+            <h3 className="text-lg font-semibold text-sand-900 dark:text-sand-50">腳本</h3>
             <span
               className={`transform transition-transform ${
                 scriptExpanded ? 'rotate-180' : ''
@@ -369,7 +372,7 @@ function CompletedState({ video }: { video: Video }) {
           </button>
 
           {scriptExpanded && (
-            <div className="px-6 pb-4 border-t border-gray-700">
+            <div className="px-6 pb-4 border-t border-sand-300 dark:border-sand-700">
               <ScriptDisplay script={video.script_json} />
             </div>
           )}
@@ -389,7 +392,7 @@ function FailedState({ video }: { video: Video }) {
 
         {/* Error Message */}
         <h2 className="text-2xl font-bold text-red-400 mb-2">
-          Video Generation Failed
+          影片生成失敗
         </h2>
         {video.error_message && (
           <p className="text-red-300 mb-6 max-w-md">
@@ -398,7 +401,7 @@ function FailedState({ video }: { video: Video }) {
         )}
         {!video.error_message && (
           <p className="text-red-300 mb-6 max-w-md">
-            We encountered an error while generating your video. Please try again.
+            生成影片時發生錯誤，請重試。
           </p>
         )}
 
@@ -406,15 +409,15 @@ function FailedState({ video }: { video: Video }) {
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <Link
             href="/generate"
-            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-sand-50 font-semibold rounded-lg transition-colors"
           >
-            Try Again
+            重試
           </Link>
           <Link
             href="/dashboard"
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+            className="px-6 py-3 bg-sand-200 hover:bg-sand-300 dark:bg-sand-800 dark:hover:bg-sand-700 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
           >
-            Back to Dashboard
+            返回儀表板
           </Link>
         </div>
       </div>
@@ -427,8 +430,8 @@ function ScriptDisplay({ script }: { script: Script }) {
   // Handle different script formats
   if (typeof script !== 'object' || script === null) {
     return (
-      <div className="text-gray-400">
-        <p>Unable to display script in expected format</p>
+      <div className="text-sand-500 dark:text-sand-400">
+        <p>無法以預期格式顯示腳本</p>
       </div>
     )
   }
@@ -438,9 +441,9 @@ function ScriptDisplay({ script }: { script: Script }) {
     return (
       <div className="space-y-4">
         {script.map((item, index) => (
-          <div key={index} className="bg-gray-700/50 rounded p-4">
-            <div className="text-white font-medium mb-2">Scene {index + 1}</div>
-            <p className="text-gray-300 text-sm whitespace-pre-wrap">
+          <div key={index} className="bg-sand-200/50 dark:bg-sand-700/50 rounded p-4">
+            <div className="text-sand-900 dark:text-sand-50 font-medium mb-2">場景 {index + 1}</div>
+            <p className="text-sand-600 dark:text-sand-300 text-sm whitespace-pre-wrap">
               {JSON.stringify(item, null, 2)}
             </p>
           </div>
@@ -454,8 +457,8 @@ function ScriptDisplay({ script }: { script: Script }) {
 
   if (entries.length === 0) {
     return (
-      <div className="text-gray-400">
-        <p>No script content available</p>
+      <div className="text-sand-500 dark:text-sand-400">
+        <p>沒有腳本內容</p>
       </div>
     )
   }
@@ -464,7 +467,7 @@ function ScriptDisplay({ script }: { script: Script }) {
   if (entries.length === 1 && typeof entries[0][1] === 'string') {
     const [, content] = entries[0]
     return (
-      <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
+      <div className="text-sand-600 dark:text-sand-300 text-sm whitespace-pre-wrap leading-relaxed">
         {content}
       </div>
     )
@@ -474,11 +477,11 @@ function ScriptDisplay({ script }: { script: Script }) {
   return (
     <div className="space-y-4">
       {entries.map(([key, value], index) => (
-        <div key={index} className="bg-gray-700/50 rounded p-4">
-          <div className="text-white font-medium mb-2 capitalize">
+        <div key={index} className="bg-sand-200/50 dark:bg-sand-700/50 rounded p-4">
+          <div className="text-sand-900 dark:text-sand-50 font-medium mb-2 capitalize">
             {key.replace(/_/g, ' ')}
           </div>
-          <div className="text-gray-300 text-sm whitespace-pre-wrap">
+          <div className="text-sand-600 dark:text-sand-300 text-sm whitespace-pre-wrap">
             {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
           </div>
         </div>

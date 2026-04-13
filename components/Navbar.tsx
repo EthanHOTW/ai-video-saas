@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import ThemeToggle from './ThemeToggle'
 
 interface User {
   email: string
@@ -39,15 +40,15 @@ export default function Navbar({ user }: NavbarProps) {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-sand-100 dark:bg-sand-950 border-b border-sand-200 dark:border-sand-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">VA</span>
+            <div className="w-8 h-8 bg-accent dark:bg-accent rounded-lg flex items-center justify-center">
+              <span className="text-sand-900 dark:text-sand-50 font-bold text-sm">VA</span>
             </div>
-            <span className="text-white font-bold text-lg hidden sm:inline">
+            <span className="text-sand-900 dark:text-sand-50 font-bold text-lg hidden sm:inline">
               VideoAI
             </span>
           </Link>
@@ -58,25 +59,27 @@ export default function Navbar({ user }: NavbarProps) {
               <>
                 <Link
                   href="/dashboard"
-                  className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+                  className="text-sand-600 dark:text-sand-300 hover:text-sand-900 dark:hover:text-sand-50 transition-colors text-sm font-medium"
                 >
-                  Dashboard
+                  儀表板
                 </Link>
                 <Link
                   href="/pricing"
-                  className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+                  className="text-sand-600 dark:text-sand-300 hover:text-sand-900 dark:hover:text-sand-50 transition-colors text-sm font-medium"
                 >
-                  Pricing
+                  方案價格
                 </Link>
+
+                <ThemeToggle />
 
                 {/* User Avatar Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-sand-200 dark:hover:bg-sand-800 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-semibold">
+                    <div className="w-8 h-8 bg-gradient-to-br from-accent/80 to-accent dark:from-accent/80 dark:to-accent rounded-full flex items-center justify-center">
+                      <span className="text-sand-900 dark:text-sand-50 text-sm font-semibold">
                         {user.display_name
                           .split(' ')
                           .map((n) => n[0])
@@ -88,27 +91,27 @@ export default function Navbar({ user }: NavbarProps) {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 py-2">
-                      <div className="px-4 py-2 border-b border-gray-700">
-                        <p className="text-sm text-white font-medium truncate">
+                    <div className="absolute right-0 mt-2 w-48 bg-sand-200 dark:bg-sand-800 rounded-lg shadow-lg border border-sand-300 dark:border-sand-700 py-2">
+                      <div className="px-4 py-2 border-b border-sand-300 dark:border-sand-700">
+                        <p className="text-sm text-sand-900 dark:text-sand-50 font-medium truncate">
                           {user.display_name}
                         </p>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-xs text-sand-500 dark:text-sand-400 truncate">
                           {user.email}
                         </p>
                       </div>
                       <Link
                         href="/settings"
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                        className="block w-full text-left px-4 py-2 text-sm text-sand-600 dark:text-sand-300 hover:bg-sand-300 dark:hover:bg-sand-700 hover:text-sand-900 dark:hover:text-sand-50 transition-colors"
                         onClick={() => setDropdownOpen(false)}
                       >
-                        Settings
+                        設定
                       </Link>
                       <button
                         onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors border-t border-gray-700 mt-2 pt-2"
+                        className="w-full text-left px-4 py-2 text-sm text-sand-600 dark:text-sand-300 hover:bg-sand-300 dark:hover:bg-sand-700 hover:text-sand-900 dark:hover:text-sand-50 transition-colors border-t border-sand-300 dark:border-sand-700 mt-2 pt-2"
                       >
-                        Sign Out
+                        登出
                       </button>
                     </div>
                   )}
@@ -118,15 +121,18 @@ export default function Navbar({ user }: NavbarProps) {
               <>
                 <Link
                   href="/pricing"
-                  className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+                  className="text-sand-600 dark:text-sand-300 hover:text-sand-900 dark:hover:text-sand-50 transition-colors text-sm font-medium"
                 >
-                  Pricing
+                  方案價格
                 </Link>
+
+                <ThemeToggle />
+
                 <Link
                   href="/signin"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+                  className="px-4 py-2 bg-accent dark:bg-accent hover:opacity-90 text-sand-900 dark:text-sand-50 rounded-lg font-medium transition-opacity text-sm"
                 >
-                  Sign In
+                  登入
                 </Link>
               </>
             )}
