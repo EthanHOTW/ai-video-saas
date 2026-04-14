@@ -18,6 +18,7 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [loadingPortal, setLoadingPortal] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -99,6 +100,27 @@ export default function SettingsPage() {
   const handleConfirmDelete = () => {
     alert('帳號刪除功能將在完整驗證流程後實作。')
     setShowDeleteConfirm(false)
+  }
+
+  const handleManageSubscription = async () => {
+    setLoadingPortal(true)
+    try {
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || '無法開啟管理頁面')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('發生錯誤，請稍後再試')
+    } finally {
+      setLoadingPortal(false)
+    }
   }
 
   if (loading) {
@@ -203,12 +225,23 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Link
-                href="/pricing"
-                className="inline-block px-6 py-2 bg-sand-200 dark:bg-sand-700 hover:bg-sand-300 dark:hover:bg-sand-600 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
-              >
-                管理方案
-              </Link>
+              <div className="flex gap-3">
+                <Link
+                  href="/pricing"
+                  className="inline-block px-6 py-2 bg-sand-200 dark:bg-sand-700 hover:bg-sand-300 dark:hover:bg-sand-600 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
+                >
+                  管理方案
+                </Link>
+                {profile?.plan && profile.plan !== 'free' && (
+                  <button
+                    onClick={handleManageSubscription}
+                    disabled={loadingPortal}
+                    className="px-6 py-2 bg-accent hover:bg-accent-dark disabled:bg-sand-300 dark:disabled:bg-sand-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+                  >
+                    {loadingPortal ? '載入中...' : '管理訂閱'}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Danger Zone Section */}

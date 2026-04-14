@@ -69,8 +69,44 @@ export default function PricingPage() {
     },
   ]
 
-  const handleSelectPlan = () => {
-    alert('Stripe 付款功能即將上線！')
+  const handleSelectPlan = async (planName: string) => {
+    const plan = planName.toLowerCase()
+    if (plan === 'free') return // free plan doesn't need checkout
+
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || '建立付款連結失敗')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('發生錯誤，請稍後再試')
+    }
+  }
+
+  const handleManageSubscription = async () => {
+    try {
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || '無法開啟管理頁面')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('發生錯誤，請稍後再試')
+    }
   }
 
   return (
@@ -101,10 +137,22 @@ export default function PricingPage() {
                   features={plan.features}
                   isPopular={plan.isPopular}
                   isCurrentPlan={profile?.plan === plan.name.toLowerCase()}
-                  onSelect={() => handleSelectPlan()}
+                  onSelect={() => handleSelectPlan(plan.name)}
                 />
               ))}
             </div>
+
+            {/* Manage Subscription Section */}
+            {profile?.plan && profile.plan !== 'free' && (
+              <div className="mb-16">
+                <button
+                  onClick={handleManageSubscription}
+                  className="w-full px-6 py-3 bg-accent hover:bg-accent-dark text-white font-semibold rounded-lg transition-colors"
+                >
+                  管理訂閱
+                </button>
+              </div>
+            )}
 
             {/* FAQ Section */}
             <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-8 mt-20">

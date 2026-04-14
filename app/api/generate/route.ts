@@ -63,15 +63,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Decrement credits by 1
+    const { error: creditError } = await supabase
+      .from('profiles')
+      .update({ credits_remaining: profile.credits_remaining - 1 })
+      .eq('id', user.id)
+
+    if (creditError) {
+      console.error('Failed to decrement credits:', creditError)
+      // Don't fail the request - credits will be refunded if generation fails
+    }
+
     // Get the base URL for callback
     const origin = new URL(request.url).origin
     const callbackUrl = `${origin}/api/callback`
+    const callbackSecret = process.env.API_CALLBACK_SECRET
 
-    // Prepare n8n webhook payload
+    if (!callbackSecret) {
+      console.error('API_CALLBACK_SECRET not configured')
+      return NextResponse.json(
+        { error: 'Server misconfiguration' },
+        { status: 500 }
+      )
+    }
+
+    // Prepare n8n webhook payload with all required fields
     const n8nPayload = {
       topic,
       video_id: videoId,
+      user_id: user.id,
       callback_url: callbackUrl,
+      callback_secret: callbackSecret,
     }
 
     // Send to n8n webhook
@@ -95,7 +117,7 @@ export async function POST(request: NextRequest) {
       console.warn('N8N_WEBHOOK_URL not configured')
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, video_id: videoId })
   } catch (error) {
     console.error('Error in /api/generate:', error)
     return NextResponse.json(
