@@ -9,17 +9,19 @@ interface PageTransitionProps {
 
 export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname()
-  const [displayChildren, setDisplayChildren] = useState(children)
   const [transitionStage, setTransitionStage] = useState<'enter' | 'idle'>('enter')
 
+  // Only trigger the slide-in animation when the route changes,
+  // NOT on every re-render (e.g. typing in an input).
+  // Depending on `children` here broke IME composition because every
+  // keystroke re-ran the effect and re-mounted the animated wrapper.
   useEffect(() => {
     setTransitionStage('enter')
-    setDisplayChildren(children)
     const timer = setTimeout(() => {
       setTransitionStage('idle')
     }, 50)
     return () => clearTimeout(timer)
-  }, [pathname, children])
+  }, [pathname])
 
   return (
     <div
@@ -29,7 +31,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
           : 'opacity-100 translate-x-0'
       }`}
     >
-      {displayChildren}
+      {children}
     </div>
   )
 }
