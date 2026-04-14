@@ -5,11 +5,26 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json()
-    const { topic, videoId } = body
+    const {
+      topic,
+      videoId,
+      theme = 'life',
+      style = 'cinematic',
+      voice = 'rachel',
+      bgm_mood = 'upbeat',
+      script = null,
+    } = body
 
     if (!topic || !videoId) {
       return NextResponse.json(
         { error: 'Missing required fields: topic, videoId' },
+        { status: 400 }
+      )
+    }
+
+    if (!script || !script.scenes || !Array.isArray(script.scenes)) {
+      return NextResponse.json(
+        { error: 'Missing or invalid script (must include scenes array)' },
         { status: 400 }
       )
     }
@@ -92,6 +107,11 @@ export async function POST(request: NextRequest) {
       topic,
       video_id: videoId,
       user_id: user.id,
+      theme,
+      style,
+      voice,
+      bgm_mood,
+      script,
       callback_url: callbackUrl,
       callback_secret: callbackSecret,
     }
