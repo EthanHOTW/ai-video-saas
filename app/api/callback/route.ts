@@ -60,8 +60,9 @@ export async function POST(request: NextRequest) {
     if (thumbnail_url) {
       updateData.thumbnail_url = thumbnail_url
     }
-    if (duration !== undefined) {
-      updateData.duration_sec = duration
+    if (duration !== undefined && duration !== null) {
+      // duration_sec is an integer column — round floats before insert
+      updateData.duration_sec = Math.round(Number(duration))
     }
     if (script_json) {
       updateData.script_json = script_json
@@ -84,7 +85,13 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Failed to update video:', updateError)
       return NextResponse.json(
-        { error: 'Failed to update video', details: updateError.message },
+        {
+          error: 'Failed to update video',
+          details: updateError.message,
+          code: updateError.code,
+          hint: updateError.hint,
+          attemptedUpdate: updateData,
+        },
         { status: 500 }
       )
     }
