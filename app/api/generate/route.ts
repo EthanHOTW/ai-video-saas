@@ -102,6 +102,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Server-side API keys forwarded to n8n so the workflow nodes
+    // can authenticate against OpenAI / fal.ai / Creatomate.
+    // These replace the old BYOK Form Trigger inputs.
+    const openaiApiKey = process.env.OPENAI_API_KEY
+    const falAiApiKey = process.env.FAL_AI_API_KEY
+    const creatomateApiKey = process.env.CREATOMATE_API_KEY
+
+    if (!openaiApiKey || !falAiApiKey || !creatomateApiKey) {
+      console.error('Missing upstream API keys', {
+        openai: !!openaiApiKey,
+        fal: !!falAiApiKey,
+        creatomate: !!creatomateApiKey,
+      })
+      return NextResponse.json(
+        { error: 'Server misconfiguration: upstream API keys not set' },
+        { status: 500 }
+      )
+    }
+
     // Prepare n8n webhook payload with all required fields
     const n8nPayload = {
       topic,
@@ -114,6 +133,9 @@ export async function POST(request: NextRequest) {
       script,
       callback_url: callbackUrl,
       callback_secret: callbackSecret,
+      openai_api_key: openaiApiKey,
+      fal_ai_api_key: falAiApiKey,
+      creatomate_api_key: creatomateApiKey,
     }
 
     // Send to n8n webhook
