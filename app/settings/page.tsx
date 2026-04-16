@@ -225,12 +225,18 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Link
                   href="/pricing"
                   className="inline-block px-6 py-2 bg-sand-200 dark:bg-sand-700 hover:bg-sand-300 dark:hover:bg-sand-600 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
                 >
                   管理方案
+                </Link>
+                <Link
+                  href="/settings/usage"
+                  className="inline-block px-6 py-2 bg-sand-200 dark:bg-sand-700 hover:bg-sand-300 dark:hover:bg-sand-600 text-sand-900 dark:text-sand-50 font-semibold rounded-lg transition-colors"
+                >
+                  使用量歷史
                 </Link>
                 {profile?.plan && profile.plan !== 'free' && (
                   <button

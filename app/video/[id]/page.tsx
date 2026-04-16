@@ -9,6 +9,7 @@ import Navbar from '@/components/Navbar'
 import StatusBadge from '@/components/StatusBadge'
 import Footer from '@/components/Footer'
 import PageTransition from '@/components/PageTransition'
+import ShareControls from '@/components/ShareControls'
 
 export default function VideoDetailPage() {
   const params = useParams()
@@ -322,6 +323,9 @@ function CompletedState({ video }: { video: Video }) {
           再建一支
         </Link>
       </div>
+
+      {/* Share Controls */}
+      <ShareControls video={video} />
 
       {/* Video Info */}
       <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-6">

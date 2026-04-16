@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import PageTransition from '@/components/PageTransition'
-import type { Profile } from '@/lib/types'
+import TemplateGallery from '@/components/TemplateGallery'
+import type { Profile, Template } from '@/lib/types'
 
 type Scene = {
   scene: number
@@ -164,6 +165,17 @@ export default function GeneratePage() {
         .update({ credits_remaining: profile.credits_remaining - 1 })
         .eq('id', authUser.id)
 
+      // Record usage log entry (non-blocking)
+      supabase.from('usage_log').insert({
+        user_id: authUser.id,
+        event_type: 'video_generated',
+        credits_delta: -1,
+        video_id: videoData.id,
+        metadata: { topic: topic.trim(), theme, style, voice, bgm_mood: bgmMood },
+      }).then(({ error: logErr }) => {
+        if (logErr) console.error('usage_log insert failed:', logErr)
+      })
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -182,6 +194,18 @@ export default function GeneratePage() {
   }
 
   const handleBack = () => { setStage('form'); setScript(null); setError(null) }
+
+  const applyTemplate = (t: Template) => {
+    setTopic(t.topic)
+    setTheme(t.theme)
+    setStyle(t.style)
+    setVoice(t.voice)
+    setBgmMood(t.bgm_mood)
+    setError(null)
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    }
+  }
 
   if (loading) {
     return (
@@ -248,6 +272,10 @@ export default function GeneratePage() {
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
                 <p className="text-red-300">{error}</p>
               </div>
+            )}
+
+            {profile && profile.credits_remaining > 0 && stage === 'form' && (
+              <TemplateGallery onApply={applyTemplate} />
             )}
 
             {profile && profile.credits_remaining > 0 && stage === 'form' && (

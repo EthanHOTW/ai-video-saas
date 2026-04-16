@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import VideoCard from '@/components/VideoCard'
+import DashboardVideos from '@/components/DashboardVideos'
+import type { Video } from '@/lib/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -28,14 +29,15 @@ export default async function DashboardPage() {
     redirect('/auth')
   }
 
-  // Fetch user's videos
+  // Fetch user's videos (exclude soft-deleted)
   const { data: videos } = await supabase
     .from('videos')
     .select('*')
     .eq('user_id', user.id)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
-  const userVideos = videos || []
+  const userVideos: Video[] = (videos as Video[] | null) || []
 
   // Count stats
   const totalVideos = userVideos.length
@@ -130,31 +132,7 @@ export default async function DashboardPage() {
               </p>
             </div>
 
-            {userVideos.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userVideos.map((video) => (
-                  <VideoCard key={video.id} video={video} />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-sand-100 dark:bg-sand-900 border-2 border-dashed border-sand-300 dark:border-sand-700 rounded-lg p-12 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="text-6xl opacity-50">🎬</div>
-                </div>
-                <h3 className="text-xl font-semibold text-sand-900 dark:text-sand-50 mb-2">
-                  尚無影片
-                </h3>
-                <p className="text-sand-500 dark:text-sand-400 mb-6 max-w-sm mx-auto">
-                  建立你的第一支 AI 影片！只要輸入主題，AI 就會幫你完成。
-                </p>
-                <Link
-                  href="/generate"
-                  className="inline-block px-6 py-3 bg-accent hover:bg-accent-dark text-sand-50 font-semibold rounded-lg transition-colors duration-200"
-                >
-                  建立第一支影片
-                </Link>
-              </div>
-            )}
+            <DashboardVideos initialVideos={userVideos} />
           </div>
         </div>
       </main>
