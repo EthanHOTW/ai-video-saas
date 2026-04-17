@@ -267,11 +267,10 @@ function ProcessingState({ video }: { video: Video }) {
         {/* Progress steps with real-time status */}
         <div className="w-full max-w-md">
           <div className="space-y-3">
-            {steps.map((step, index) => {
+            {steps.map((step) => {
               const stepIdx = stepOrder.indexOf(step.key)
               const isCompleted = currentIdx > stepIdx
               const isActive = currentIdx === stepIdx
-              const isPending = currentIdx < stepIdx
 
               return (
                 <div key={step.key} className="flex items-center space-x-3">
