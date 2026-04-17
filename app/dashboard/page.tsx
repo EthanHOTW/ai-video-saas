@@ -113,6 +113,9 @@ export default async function DashboardPage() {
                   <p className="text-3xl font-bold text-sand-900 dark:text-sand-50 capitalize">
                     {profile.plan}
                   </p>
+                  <p className="text-xs text-sand-400 dark:text-sand-500 mt-1">
+                    最高 {profile.max_duration_tier === 'premium' ? 'Premium' : profile.max_duration_tier === 'standard' ? 'Standard' : 'Flash'}
+                  </p>
                 </div>
                 <div className="text-4xl opacity-50">📊</div>
               </div>

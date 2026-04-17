@@ -224,16 +224,20 @@ export default function VideoDetailPage() {
 
 // Processing/Pending State Component
 function ProcessingState({ video }: { video: Video }) {
-  const statusText = video.status === 'pending'
-    ? '正在生成你的影片...'
-    : '處理中...'
-
   const steps = [
-    { name: '生成腳本', icon: '✍️' },
-    { name: '建立旁白', icon: '🎤' },
-    { name: '生成配圖', icon: '🖼️' },
-    { name: '渲染影片', icon: '🎬' },
+    { key: 'script', name: '生成腳本', icon: '✍️' },
+    { key: 'voice', name: '建立配音', icon: '🎤' },
+    { key: 'visuals', name: 'LTX 生成影片', icon: '🎥' },
+    { key: 'compositing', name: '合成影片', icon: '🎬' },
+    { key: 'finalizing', name: '最終處理', icon: '✨' },
   ]
+
+  const progressStep = video.progress_step || 'queued'
+  const stepOrder = ['queued', 'script', 'voice', 'visuals', 'compositing', 'finalizing', 'done']
+  const currentIdx = stepOrder.indexOf(progressStep)
+
+  const tierLabel = video.duration_tier === 'premium' ? '👑 Premium' :
+                    video.duration_tier === 'standard' ? '🎬 Standard' : '⚡ Flash'
 
   return (
     <div className="bg-sand-100 dark:bg-sand-900 border border-sand-300 dark:border-sand-700 rounded-lg p-12">
@@ -251,23 +255,42 @@ function ProcessingState({ video }: { video: Video }) {
 
         {/* Status text */}
         <h2 className="text-2xl font-bold text-sand-900 dark:text-sand-50 mb-2 text-center">
-          {statusText}
+          正在生成你的影片...
         </h2>
-        <p className="text-sand-500 dark:text-sand-400 text-center mb-8">
-          可能需要幾分鐘，進度會即時更新。
+        <p className="text-sand-500 dark:text-sand-400 text-center mb-2">
+          {tierLabel} | 預計 {video.duration_tier === 'flash' ? '2-3' : video.duration_tier === 'standard' ? '5-8' : '8-12'} 分鐘
+        </p>
+        <p className="text-sand-400 dark:text-sand-500 text-sm text-center mb-8">
+          進度會即時更新，完成後可直接下載
         </p>
 
-        {/* Progress steps */}
+        {/* Progress steps with real-time status */}
         <div className="w-full max-w-md">
           <div className="space-y-3">
-            {steps.map((step, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <div className="w-6 h-6 rounded-full bg-sand-200 dark:bg-sand-800 flex items-center justify-center text-sm text-sand-500 dark:text-sand-400">
-                  {step.icon}
+            {steps.map((step, index) => {
+              const stepIdx = stepOrder.indexOf(step.key)
+              const isCompleted = currentIdx > stepIdx
+              const isActive = currentIdx === stepIdx
+              const isPending = currentIdx < stepIdx
+
+              return (
+                <div key={step.key} className="flex items-center space-x-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-colors
+                    ${isCompleted ? 'bg-green-500 text-white' :
+                      isActive ? 'bg-accent text-white animate-pulse' :
+                      'bg-sand-200 dark:bg-sand-800 text-sand-400'}`}>
+                    {isCompleted ? '✓' : step.icon}
+                  </div>
+                  <span className={`text-sm font-medium transition-colors
+                    ${isCompleted ? 'text-green-600 dark:text-green-400' :
+                      isActive ? 'text-accent font-bold' :
+                      'text-sand-400 dark:text-sand-500'}`}>
+                    {step.name}
+                    {isActive && ' ...'}
+                  </span>
                 </div>
-                <span className="text-sand-500 dark:text-sand-400 text-sm">{step.name}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 

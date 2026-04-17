@@ -59,6 +59,20 @@ export default function VideoCard({ video }: VideoCardProps) {
           <div className="absolute top-3 right-3">
             <StatusBadge status={video.status} />
           </div>
+
+          {/* Duration Tier Badge */}
+          {video.duration_tier && (
+            <div className="absolute top-3 left-3">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                ${video.duration_tier === 'premium' ? 'bg-yellow-500/90 text-black' :
+                  video.duration_tier === 'standard' ? 'bg-blue-500/90 text-white' :
+                  'bg-sand-500/90 text-white'}`}>
+                {video.duration_tier === 'premium' ? '👑 Premium' :
+                 video.duration_tier === 'standard' ? '🎬 Standard' :
+                 '⚡ Flash'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Content Section */}

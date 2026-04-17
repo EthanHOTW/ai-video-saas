@@ -3,31 +3,25 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify API secret from Authorization header
+    // Verify API secret
     const authHeader = request.headers.get('authorization')
     const expectedSecret = process.env.API_CALLBACK_SECRET
 
     if (!expectedSecret) {
       console.error('API_CALLBACK_SECRET not configured')
-      return NextResponse.json(
-        { error: 'Server misconfiguration' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
     }
 
     const providedSecret = authHeader?.replace('Bearer ', '')
     if (providedSecret !== expectedSecret) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Invalid API secret' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized: Invalid API secret' }, { status: 401 })
     }
 
-    // Parse request body
     const body = await request.json()
     const {
       video_id,
       status,
+      progress_step,
       video_url,
       thumbnail_url,
       duration,
@@ -36,108 +30,115 @@ export async function POST(request: NextRequest) {
       error_message,
     } = body
 
-    if (!video_id || !status) {
-      return NextResponse.json(
-        { error: 'Missing required fields: video_id, status' },
-        { status: 400 }
-      )
+    if (!video_id) {
+      return NextResponse.json({ error: 'Missing required field: video_id' }, { status: 400 })
     }
 
-    // Create admin Supabase client (bypasses RLS, no cookies needed)
     const supabase = createAdminClient()
 
-    // Prepare update data with all provided fields
+    // Build update payload
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {
-      status,
       updated_at: new Date().toISOString(),
     }
 
-    // Add optional fields if provided
-    if (video_url) {
-      updateData.video_url = video_url
-    }
-    if (thumbnail_url) {
-      updateData.thumbnail_url = thumbnail_url
-    }
-    if (duration !== undefined && duration !== null) {
-      // duration_sec is an integer column — round floats before insert
-      updateData.duration_sec = Math.round(Number(duration))
-    }
-    if (script_json) {
-      updateData.script_json = script_json
-    }
-    if (render_id) {
-      updateData.render_id = render_id
-    }
-    if (status === 'failed' && error_message) {
-      updateData.error_message = error_message
+    // Progress-only update (intermediate callback from n8n)
+    if (progress_step && !status) {
+      updateData.progress_step = progress_step
+      const { error: updateError } = await supabase
+        .from('videos')
+        .update(updateData)
+        .eq('id', video_id)
+
+      if (updateError) {
+        console.error('Failed to update progress:', updateError)
+        return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 })
+      }
+
+      return NextResponse.json({ success: true, message: 'Progress updated', video_id })
     }
 
-    // Update videos table
-    const { error: updateError, data: updatedVideos } = await supabase
+    // Full status update
+    if (!status) {
+      return NextResponse.json({ error: 'Missing required field: status' }, { status: 400 })
+    }
+
+    updateData.status = status
+
+    if (progress_step) updateData.progress_step = progress_step
+    if (video_url) updateData.video_url = video_url
+    if (thumbnail_url) updateData.thumbnail_url = thumbnail_url
+    if (duration !== undefined && duration !== null) {
+      updateData.duration_sec = Math.round(Number(duration))
+    }
+    if (script_json) updateData.script_json = script_json
+    if (render_id) updateData.render_id = render_id
+
+    if (status === 'completed') {
+      updateData.completed_at = new Date().toISOString()
+      updateData.progress_step = 'done'
+    }
+
+    if (status === 'failed') {
+      updateData.error_message = error_message || 'Unknown error'
+      updateData.progress_step = 'error'
+    }
+
+    // Update video
+    const { error: updateError, data: updatedVideo } = await supabase
       .from('videos')
       .update(updateData)
       .eq('id', video_id)
-      .select()
+      .select('user_id, credits_consumed')
       .single()
 
     if (updateError) {
       console.error('Failed to update video:', updateError)
       return NextResponse.json(
-        {
-          error: 'Failed to update video',
-          details: updateError.message,
-          code: updateError.code,
-          hint: updateError.hint,
-          attemptedUpdate: updateData,
-        },
+        { error: 'Failed to update video', details: updateError.message },
         { status: 500 }
       )
     }
 
-    if (!updatedVideos) {
-      return NextResponse.json(
-        { error: 'Video not found' },
-        { status: 404 }
-      )
+    if (!updatedVideo) {
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 })
     }
 
-    // If status is 'failed', restore 1 credit to user
+    // If failed, restore credits (dynamic amount based on credits_consumed)
     if (status === 'failed') {
       try {
-        const userId = updatedVideos.user_id
+        const userId = updatedVideo.user_id
+        const creditsToRestore = updatedVideo.credits_consumed || 1
 
-        // Get current credits
-        const { data: profile, error: fetchError } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('credits_remaining')
           .eq('id', userId)
           .single()
 
-        if (fetchError) {
-          console.error('Failed to fetch user profile:', fetchError)
-        } else if (profile) {
-          // Update credits with increment
-          const { error: creditError } = await supabase
+        if (profile) {
+          await supabase
             .from('profiles')
-            .update({
-              credits_remaining: profile.credits_remaining + 1,
-            })
+            .update({ credits_remaining: profile.credits_remaining + creditsToRestore })
             .eq('id', userId)
 
-          if (creditError) {
-            console.error('Failed to restore credit:', creditError)
-          }
+          // Log the refund
+          await supabase.from('usage_log').insert({
+            user_id: userId,
+            event_type: 'video_failed',
+            credits_delta: creditsToRestore,
+            video_id: video_id,
+            metadata: { error_message: error_message || 'Unknown error', credits_restored: creditsToRestore },
+          })
         }
       } catch (creditRestoreError) {
-        console.error('Error restoring credit:', creditRestoreError)
+        console.error('Error restoring credits:', creditRestoreError)
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Video callback processed successfully',
+      message: `Video ${status === 'completed' ? 'completed' : status === 'failed' ? 'failed (credits restored)' : 'updated'}`,
       video_id,
     })
   } catch (error) {
