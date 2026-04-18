@@ -52,25 +52,46 @@ export async function POST(request: NextRequest) {
 
 CRITICAL RULES (violations will cause system failure):
 1. You MUST write about the EXACT topic provided by the user. Do NOT invent a different topic.
-2. Write narration in Traditional Chinese (繁體中文), about 150-180 characters total.
-3. Split into exactly 5 scenes with a hook in scene 1 and a twist/memorable ending.
-4. Output ONLY valid JSON (no markdown, no extra text).
-5. Visual prompt rules (MANDATORY):
-   - Keep it concise, one sentence per scene, in English
-   - Focus on objects, environment, atmosphere, lighting
-   - Describe motion/action clearly (for image-to-video animation)
-   - Append this style descriptor to every visual_prompt: "${styleDesc}"
+2. LANGUAGE RULES (ABSOLUTE):
+   - All Chinese output MUST be 繁體中文 (Traditional Chinese, zh-TW).
+   - 禁止使用任何簡體字 (NO Simplified Chinese characters anywhere).
+   - If user topic is in any non-Chinese language, STILL output Chinese fields in 繁體中文.
+3. 'narration' is 150-180 繁中 characters total.
+4. EXACTLY 5 scenes, scene 1 has a hook, scene 5 has a twist or memorable ending.
+5. Output ONLY valid JSON (no markdown wrap, no prose before/after).
+6. For every scene, fill ALL structured fields:
+   - story_beat: ONE 繁中 sentence describing that scene's dramatic purpose (e.g., "主角登場，建立同情點")
+   - narration_zh_tw: that scene's 繁中 narration chunk (~30 chars, a slice of the full narration)
+   - camera: English cinematography directive — shot size + angle + movement (e.g., "extreme close-up, low angle, slow dolly-in")
+   - objects: array of EVERY visible subject (characters, animals, key props). Each object has:
+       name (繁中 short label)
+       appearance (繁中 detailed: color/texture/size/age/clothing)
+       sound (繁中 — sound it makes this scene, or '無' if silent)
+       action (繁中 — specific motion in this scene)
+   - visual_zh: 繁中 畫面簡述 (for UI preview display)
+   - visual_prompt: DETAILED English text-to-image prompt for FLUX that EXPLICITLY merges: the camera directive, every object's appearance + action, environment, atmosphere. Append this style descriptor at the end: "${styleDesc}"
 
 Theme guidance: ${themeGuide}
 
 Output JSON schema:
 {
-  "title": "中文標題(10字內)",
-  "hook": "前3秒鉤子(20字內)",
-  "narration": "完整旁白純文字(150-180字)",
+  "title": "繁中標題(10字內)",
+  "hook": "前3秒鉤子(20字內, 繁中)",
+  "narration": "完整旁白純文字(150-180 繁中字)",
+  "mood": "upbeat|calm|cinematic|dramatic|playful",
   "scenes": [
-    {"scene": 1, "visual_zh": "中文畫面描述", "visual_prompt": "English prompt with style descriptor"},
-    ... 5 scenes total ...
+    {
+      "scene": 1,
+      "story_beat": "繁中一句劇情功能",
+      "narration_zh_tw": "這幕對應旁白 (繁中)",
+      "camera": "English camera directive",
+      "objects": [
+        { "name": "繁中", "appearance": "繁中細節", "sound": "繁中或'無'", "action": "繁中" }
+      ],
+      "visual_zh": "繁中畫面描述",
+      "visual_prompt": "English prompt ending with style descriptor"
+    }
+    // ... 5 scenes total
   ]
 }`
 
