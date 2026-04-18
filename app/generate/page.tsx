@@ -49,6 +49,15 @@ const SUBTITLE_STYLE_OPTIONS = [
   { value: 'keyword', label: '動態關鍵字', desc: '關鍵字放大彈跳' },
   { value: 'none', label: '無字幕', desc: '只保留旁白' },
 ]
+const DURATION_SEC_OPTIONS: Record<DurationTier, number[]> = {
+  flash: [15, 20, 25, 30],
+  standard: [30, 45, 60],
+  premium: [60, 90, 120],
+}
+const RESOLUTION_OPTIONS = [
+  { value: '720p', label: '720p (HD)', desc: '1280×720，標準畫質' },
+  { value: '1080p', label: '1080p (Full HD)', desc: '1920×1080，高畫質' },
+]
 const VOICE_OPTIONS = [
   { value: 'rachel', label: '女聲 — 溫柔 (Rachel)' },
   { value: 'bella', label: '女聲 — 活潑 (Bella)' },
@@ -88,6 +97,8 @@ export default function GeneratePage() {
   // Step 1 state
   const [topic, setTopic] = useState('')
   const [durationTier, setDurationTier] = useState<DurationTier>('flash')
+  const [durationSec, setDurationSec] = useState<number>(20)
+  const [resolution, setResolution] = useState<'720p' | '1080p'>('720p')
   const [language, setLanguage] = useState('zh-TW')
 
   // Step 2 state
@@ -128,6 +139,19 @@ export default function GeneratePage() {
   const creditsNeeded = getCreditsForTier(durationTier)
   const userMaxTier = (profile?.max_duration_tier || 'flash') as DurationTier
   const hasEnoughCredits = (profile?.credits_remaining || 0) >= creditsNeeded
+  const userCanUse1080p = profile?.plan === 'starter' || profile?.plan === 'pro'
+
+  // When tier changes, reset durationSec to the tier's default (middle value)
+  useEffect(() => {
+    const opts = DURATION_SEC_OPTIONS[durationTier]
+    const mid = opts[Math.floor(opts.length / 2)]
+    setDurationSec(mid)
+  }, [durationTier])
+
+  // Free plan can't use 1080p — force 720p
+  useEffect(() => {
+    if (!userCanUse1080p && resolution === '1080p') setResolution('720p')
+  }, [userCanUse1080p, resolution])
 
   // Step 1 → 2
   const handleNext1 = () => {
@@ -205,6 +229,7 @@ export default function GeneratePage() {
           voice_enabled: voiceEnabled,
           bgm_mood: bgmMood,
           subtitle_enabled: subtitleStyle !== 'none',
+          duration_sec: durationSec,
           script: script,
           status: 'pending',
           progress_step: 'queued',
@@ -228,6 +253,8 @@ export default function GeneratePage() {
           duration_tier: durationTier,
           theme, style, voice, bgm_mood: bgmMood,
           subtitle_style: subtitleStyle,
+          duration_sec: durationSec,
+          resolution,
           credits_consumed: creditsNeeded,
         },
       }).then(({ error: logErr }) => {
@@ -247,6 +274,8 @@ export default function GeneratePage() {
           voice_enabled: voiceEnabled,
           bgm_mood: bgmMood,
           subtitle_style: subtitleStyle,
+          duration_sec: durationSec,
+          resolution,
           script,
         }),
       })
@@ -384,6 +413,38 @@ export default function GeneratePage() {
                           </button>
                         )
                       })}
+                    </div>
+                  </div>
+
+                  {/* Duration fine-tune + Resolution */}
+                  <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="duration_sec" className="block text-sm font-semibold text-sand-900 dark:text-sand-50 mb-2">秒數</label>
+                      <select
+                        id="duration_sec"
+                        value={durationSec}
+                        onChange={(e) => setDurationSec(Number(e.target.value))}
+                        className="w-full px-4 py-3 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 focus:outline-none focus:border-accent"
+                      >
+                        {DURATION_SEC_OPTIONS[durationTier].map((s) => (
+                          <option key={s} value={s}>{s} 秒</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="resolution" className="block text-sm font-semibold text-sand-900 dark:text-sand-50 mb-2">畫質</label>
+                      <select
+                        id="resolution"
+                        value={resolution}
+                        onChange={(e) => setResolution(e.target.value as '720p' | '1080p')}
+                        className="w-full px-4 py-3 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 focus:outline-none focus:border-accent"
+                      >
+                        {RESOLUTION_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value} disabled={o.value === '1080p' && !userCanUse1080p}>
+                            {o.label}{o.value === '1080p' && !userCanUse1080p ? '（需升級方案）' : ''}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 

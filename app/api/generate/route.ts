@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
       voice_enabled = true,
       bgm_mood = 'auto',
       subtitle_style = 'tiktok',
+      duration_sec,
+      resolution = '720p',
       script = null,
     } = body
 
@@ -184,6 +186,8 @@ export async function POST(request: NextRequest) {
       voice_enabled,
       bgm_mood,
       subtitle_style,
+      duration_sec: duration_sec ?? tierConfig.targetSeconds,
+      resolution,
       script,
 
       // Callback
