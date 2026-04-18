@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
       voice = 'rachel',
       voice_enabled = true,
       bgm_mood = 'auto',
+      voice_provider = 'openai',
+      voice_id,
       subtitle_style = 'tiktok',
       duration_sec,
       resolution = '720p',
@@ -155,6 +157,7 @@ export async function POST(request: NextRequest) {
     const openaiApiKey = process.env.OPENAI_API_KEY
     const falAiApiKey = process.env.FAL_AI_API_KEY
     const creatomateApiKey = process.env.CREATOMATE_API_KEY
+    const elevenlabsApiKey = process.env.ELEVENLABS_API_KEY || ''
 
     if (!openaiApiKey || !falAiApiKey || !creatomateApiKey) {
       console.error('Missing upstream API keys')
@@ -183,6 +186,8 @@ export async function POST(request: NextRequest) {
       theme,
       style,
       voice,
+      voice_provider,
+      voice_id: voice_id || voice,
       voice_enabled,
       bgm_mood,
       subtitle_style,
@@ -198,6 +203,7 @@ export async function POST(request: NextRequest) {
       openai_api_key: openaiApiKey,
       fal_ai_api_key: falAiApiKey,
       creatomate_api_key: creatomateApiKey,
+      elevenlabs_api_key: elevenlabsApiKey,
     }
 
     // --- Send to n8n ---

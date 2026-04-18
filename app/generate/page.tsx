@@ -58,12 +58,25 @@ const RESOLUTION_OPTIONS = [
   { value: '720p', label: '720p (HD)', desc: '1280×720，標準畫質' },
   { value: '1080p', label: '1080p (Full HD)', desc: '1920×1080，高畫質' },
 ]
-const VOICE_OPTIONS = [
-  { value: 'rachel', label: '女聲 — 溫柔 (Rachel)' },
-  { value: 'bella', label: '女聲 — 活潑 (Bella)' },
-  { value: 'adam', label: '男聲 — 穩重 (Adam)' },
-  { value: 'josh', label: '男聲 — 年輕 (Josh)' },
-  { value: 'antoni', label: '旁白 — 新聞播報 (Antoni)' },
+const VOICE_PROVIDER_OPTIONS = [
+  { value: 'openai', label: 'OpenAI TTS（內建）', desc: '快速、穩定' },
+  { value: 'elevenlabs', label: 'ElevenLabs（支援克隆）', desc: '高擬真、可自訂聲音' },
+]
+const VOICE_OPTIONS_OPENAI = [
+  { value: 'nova', label: '女聲 — 活潑 (Nova)' },
+  { value: 'shimmer', label: '女聲 — 溫柔 (Shimmer)' },
+  { value: 'alloy', label: '中性 — 專業 (Alloy)' },
+  { value: 'echo', label: '男聲 — 穩重 (Echo)' },
+  { value: 'fable', label: '男聲 — 故事 (Fable)' },
+  { value: 'onyx', label: '男聲 — 深沉 (Onyx)' },
+]
+const VOICE_OPTIONS_ELEVENLABS = [
+  { value: '21m00Tcm4TlvDq8ikWAM', label: '女聲 — 溫柔 (Rachel)' },
+  { value: 'EXAVITQu4vr4xnSDxMaL', label: '女聲 — 活潑 (Bella)' },
+  { value: 'pNInz6obpgDQGcFmaJgB', label: '男聲 — 穩重 (Adam)' },
+  { value: 'TxGEqnHWrfWFTfGW9XjX', label: '男聲 — 年輕 (Josh)' },
+  { value: 'ErXwobaYiN019PkySvjV', label: '旁白 — 新聞播報 (Antoni)' },
+  { value: '__custom__', label: '自訂克隆聲音（需填 voice_id）' },
 ]
 const BGM_OPTIONS = [
   { value: 'auto', label: '自動選擇' },
@@ -104,7 +117,9 @@ export default function GeneratePage() {
   // Step 2 state
   const [theme, setTheme] = useState('life')
   const [style, setStyle] = useState('cinematic')
-  const [voice, setVoice] = useState('rachel')
+  const [voiceProvider, setVoiceProvider] = useState<'openai' | 'elevenlabs'>('openai')
+  const [voice, setVoice] = useState('nova')
+  const [customVoiceId, setCustomVoiceId] = useState('')
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [bgmMood, setBgmMood] = useState('auto')
   const [subtitleStyle, setSubtitleStyle] = useState('tiktok')
@@ -152,6 +167,12 @@ export default function GeneratePage() {
   useEffect(() => {
     if (!userCanUse1080p && resolution === '1080p') setResolution('720p')
   }, [userCanUse1080p, resolution])
+
+  // Reset voice when provider changes
+  useEffect(() => {
+    setVoice(voiceProvider === 'openai' ? 'nova' : '21m00Tcm4TlvDq8ikWAM')
+    setCustomVoiceId('')
+  }, [voiceProvider])
 
   // Step 1 → 2
   const handleNext1 = () => {
@@ -252,6 +273,8 @@ export default function GeneratePage() {
           topic: topic.trim(),
           duration_tier: durationTier,
           theme, style, voice, bgm_mood: bgmMood,
+          voice_provider: voiceProvider,
+          voice_id: voiceProvider === 'elevenlabs' && voice === '__custom__' ? customVoiceId : voice,
           subtitle_style: subtitleStyle,
           duration_sec: durationSec,
           resolution,
@@ -271,6 +294,8 @@ export default function GeneratePage() {
           duration_tier: durationTier,
           language,
           theme, style, voice,
+          voice_provider: voiceProvider,
+          voice_id: voiceProvider === 'elevenlabs' && voice === '__custom__' ? customVoiceId : voice,
           voice_enabled: voiceEnabled,
           bgm_mood: bgmMood,
           subtitle_style: subtitleStyle,
@@ -557,13 +582,46 @@ export default function GeneratePage() {
                     </button>
                   </div>
                   {voiceEnabled && (
-                    <select
-                      value={voice}
-                      onChange={(e) => setVoice(e.target.value)}
-                      className="w-full px-4 py-3 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 focus:outline-none focus:border-accent"
-                    >
-                      {VOICE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
+                    <div className="space-y-3">
+                      {/* Provider */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {VOICE_PROVIDER_OPTIONS.map(p => (
+                          <button
+                            key={p.value}
+                            type="button"
+                            onClick={() => setVoiceProvider(p.value as 'openai' | 'elevenlabs')}
+                            className={`px-3 py-2 rounded-lg border-2 text-left transition-all ${
+                              voiceProvider === p.value
+                                ? 'border-accent bg-accent/10 text-sand-900 dark:text-sand-50'
+                                : 'border-sand-300 dark:border-sand-700 text-sand-500 dark:text-sand-400 hover:border-sand-400'
+                            }`}
+                          >
+                            <div className="text-sm font-medium">{p.label}</div>
+                            <div className="text-xs text-sand-500 dark:text-sand-400 mt-0.5">{p.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                      {/* Voice select */}
+                      <select
+                        value={voice}
+                        onChange={(e) => setVoice(e.target.value)}
+                        className="w-full px-4 py-3 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 focus:outline-none focus:border-accent"
+                      >
+                        {(voiceProvider === 'openai' ? VOICE_OPTIONS_OPENAI : VOICE_OPTIONS_ELEVENLABS).map(o => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                      {/* Custom ElevenLabs voice_id */}
+                      {voiceProvider === 'elevenlabs' && voice === '__custom__' && (
+                        <input
+                          type="text"
+                          value={customVoiceId}
+                          onChange={(e) => setCustomVoiceId(e.target.value.trim())}
+                          placeholder="貼上你的 ElevenLabs voice_id"
+                          className="w-full px-4 py-3 bg-sand-50 dark:bg-sand-800 border border-sand-300 dark:border-sand-600 rounded-lg text-sand-900 dark:text-sand-50 font-mono text-sm focus:outline-none focus:border-accent"
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
 
