@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       voice = 'rachel',
       voice_enabled = true,
       bgm_mood = 'auto',
+      subtitle_style = 'tiktok',
       script = null,
     } = body
 
@@ -182,6 +183,7 @@ export async function POST(request: NextRequest) {
       voice,
       voice_enabled,
       bgm_mood,
+      subtitle_style,
       script,
 
       // Callback

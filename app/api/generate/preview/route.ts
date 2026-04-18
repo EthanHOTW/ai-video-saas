@@ -15,7 +15,8 @@ const THEME_GUIDANCE: Record<string, string> = {
 // Style → visual prompt modifier (used later by FLUX/Kling via n8n)
 const STYLE_DESCRIPTOR: Record<string, string> = {
   cinematic: 'cinematic realistic photography, film grain, shallow depth of field, dramatic lighting',
-  anime: 'Japanese anime style, cel shading, vibrant colors, Studio Ghibli inspired',
+  anime: 'Japanese anime style, cel shading, vibrant colors, Makoto Shinkai / Studio Ghibli inspired, detailed backgrounds',
+  anime_us: 'Western animated cartoon style, Pixar / Disney / Cartoon Network inspired, expressive exaggerated characters, bold outlines, vibrant saturated colors',
   '3d_cartoon': '3D Pixar-style cartoon, smooth shading, playful colors',
   watercolor: 'soft watercolor illustration, hand-painted, pastel tones',
   cyberpunk: 'cyberpunk neon aesthetic, futuristic city, holographic lights, dark atmosphere',

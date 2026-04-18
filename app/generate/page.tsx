@@ -35,12 +35,19 @@ const THEME_OPTIONS = [
 const STYLE_OPTIONS = [
   { value: 'cinematic', label: '寫實電影感' },
   { value: 'anime', label: '日系動漫' },
+  { value: 'anime_us', label: '美式動漫' },
   { value: '3d_cartoon', label: '3D 卡通' },
   { value: 'watercolor', label: '水彩插畫' },
   { value: 'cyberpunk', label: '賽博龐克' },
   { value: 'vintage_film', label: '復古膠片' },
   { value: 'minimal_line', label: '極簡線條' },
   { value: 'fantasy', label: '夢幻奇幻' },
+]
+const SUBTITLE_STYLE_OPTIONS = [
+  { value: 'tiktok', label: 'TikTok 風', desc: '黃字白邊、粗體、逐句' },
+  { value: 'cinematic', label: '電影風', desc: '白字黑底、整段顯示' },
+  { value: 'keyword', label: '動態關鍵字', desc: '關鍵字放大彈跳' },
+  { value: 'none', label: '無字幕', desc: '只保留旁白' },
 ]
 const VOICE_OPTIONS = [
   { value: 'rachel', label: '女聲 — 溫柔 (Rachel)' },
@@ -89,6 +96,7 @@ export default function GeneratePage() {
   const [voice, setVoice] = useState('rachel')
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [bgmMood, setBgmMood] = useState('auto')
+  const [subtitleStyle, setSubtitleStyle] = useState('tiktok')
 
   // Step 3 state
   const [previewing, setPreviewing] = useState(false)
@@ -196,7 +204,7 @@ export default function GeneratePage() {
           voice,
           voice_enabled: voiceEnabled,
           bgm_mood: bgmMood,
-          subtitle_enabled: false,
+          subtitle_enabled: subtitleStyle !== 'none',
           script: script,
           status: 'pending',
           progress_step: 'queued',
@@ -219,6 +227,7 @@ export default function GeneratePage() {
           topic: topic.trim(),
           duration_tier: durationTier,
           theme, style, voice, bgm_mood: bgmMood,
+          subtitle_style: subtitleStyle,
           credits_consumed: creditsNeeded,
         },
       }).then(({ error: logErr }) => {
@@ -237,6 +246,7 @@ export default function GeneratePage() {
           theme, style, voice,
           voice_enabled: voiceEnabled,
           bgm_mood: bgmMood,
+          subtitle_style: subtitleStyle,
           script,
         }),
       })
@@ -506,6 +516,28 @@ export default function GeneratePage() {
                   >
                     {BGM_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
+                </div>
+
+                {/* Subtitle Style */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-sand-900 dark:text-sand-50 mb-3">字幕樣式（繁體中文）</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {SUBTITLE_STYLE_OPTIONS.map(o => (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => setSubtitleStyle(o.value)}
+                        className={`px-3 py-3 rounded-lg border-2 text-left transition-all ${
+                          subtitleStyle === o.value
+                            ? 'border-accent bg-accent/10 text-sand-900 dark:text-sand-50'
+                            : 'border-sand-300 dark:border-sand-700 text-sand-500 dark:text-sand-400 hover:border-sand-400 dark:hover:border-sand-500'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">{o.label}</div>
+                        <div className="text-xs text-sand-500 dark:text-sand-400 mt-0.5">{o.desc}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Summary bar */}
